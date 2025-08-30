@@ -2,7 +2,7 @@
 
 # First check that wireless-regdb is there
 if [ ! -f "/etc/conf.d/wireless-regdom" ]; then
-  exit 1
+  exit
 fi
 
 # If the region is already set, we're done
@@ -13,25 +13,29 @@ if [ -n "${WIRELESS_REGDOM}" ]; then
 fi
 
 # Get the current timezone
-if command -v timedatectl &> /dev/null; then
-  TIMEZONE=$(timedatectl | grep 'Time zone' | awk '{print $3}')
+if [ -e "/etc/localtime" ]; then
+  TIMEZONE=$(readlink -f /etc/localtime)
+  TIMEZONE=${TIMEZONE#/usr/share/zoneinfo/}
 else
-  exit 1
-fi
-
-if [ ! -f "/usr/share/zoneinfo/zone.tab" ]; then
-  exit 1
+  exit
 fi
 
 # Get the two letter country code using the timezone
-COUNTRY=$(awk -v tz="$TIMEZONE" '$3 == tz {print $1; exit}' /usr/share/zoneinfo/zone.tab)
+if [ -f "/usr/share/zoneinfo/zone.tab" ]; then
+  COUNTRY=$(awk -v tz="$TIMEZONE" '$3 == tz {print $1; exit}' /usr/share/zoneinfo/zone.tab)
+else
+  exit
+fi
 
-# Append it to the wireless-regdom conf file that is used at boot
-sudo echo "WIRELESS_REGDOM=\"$COUNTRY\"" >> /etc/conf.d/wireless-regdom
+# Check if we have a two letter country code
+if [[ "$COUNTRY" =~ ^[A-Z]{2}$ ]]; then
+  # Append it to the wireless-regdom conf file that is used at boot
+  echo "WIRELESS_REGDOM=\"$COUNTRY\"" | sudo tee -a /etc/conf.d/wireless-regdom > /dev/null
 
-# Also set it one off now
-if command -v iw &> /dev/null; then
-  iw reg set ${COUNTRY}
+  # Also set it one off now
+  if command -v iw &> /dev/null; then
+    sudo iw reg set ${COUNTRY}
+  fi
 fi
 
 exit 0
