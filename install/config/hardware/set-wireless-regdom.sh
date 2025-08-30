@@ -27,7 +27,7 @@ fi
 COUNTRY=$(awk -v tz="$TIMEZONE" '$3 == tz {print $1; exit}' /usr/share/zoneinfo/zone.tab)
 
 # Append it to the wireless-regdom conf file that is used at boot
-echo "WIRELESS_REGDOM=\"$COUNTRY\"" >> /etc/conf.d/wireless-regdom
+sudo echo "WIRELESS_REGDOM=\"$COUNTRY\"" >> /etc/conf.d/wireless-regdom
 
 # Also set it one off now
 if command -v iw &> /dev/null; then
