@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # First check that wireless-regdb is there
-unset WIRELESS_REGDOM
 if [ ! -f "/etc/conf.d/wireless-regdom" ]; then
   exit 1
 fi
 
 # If the region is already set, we're done
+unset WIRELESS_REGDOM
 . /etc/conf.d/wireless-regdom
 if [ -n "${WIRELESS_REGDOM}" ]; then
   exit 0
