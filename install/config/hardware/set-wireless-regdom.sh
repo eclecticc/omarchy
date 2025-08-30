@@ -19,7 +19,6 @@ else
   exit 1
 fi
 
-
 if [ ! -f "/usr/share/zoneinfo/zone.tab" ]; then
   exit 1
 fi
